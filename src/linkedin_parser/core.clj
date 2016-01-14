@@ -22,6 +22,7 @@
     (string/replace #"Page\d+" "")
     (string/replace #"\n+" "\n\n")
     (string/replace #"<h2>" "</section><section><h2>")
+    (string/replace #"<h1>" "</section><h1>")
     (string/replace #"</b>\n\n<b>" "")))
 
 (defn markup [url] (-> url text-of-pdf preprocess string-to-stream html/html-resource))

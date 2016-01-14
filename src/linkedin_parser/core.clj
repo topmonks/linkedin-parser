@@ -6,6 +6,7 @@
            (java.net URL)
            (java.io ByteArrayInputStream)))
 
+
 (defn text-of-pdf
   [stream]
   (with-open [pd (PDDocument/load stream)]
@@ -149,21 +150,46 @@
     (assoc section :content)))
 
 (def known-sections
-  #{"Summary"
-    "Honors and Awards"
-    "Skills & Expertise"
-    "Languages"
-    "Experience"
-    "Projects"
-    "Education"})
+  {"Summary" :summary
+   "Honors and Awards" :honors-and-awards
+   "Skills & Expertise" :skills-and-expertise
+   "Languages" :languages
+   "Experience" :experience
+   "Projects" :projects
+   "Education" :education})
 
-(defn parse-pdf [stream]
+(defn parse-sections [html]
   (->>
-    stream
-    markup
+    html
     sections
     (filter #(contains? known-sections (:name %)))
     (mapv parse-section)
-    (mapv (fn [{:keys [name content]}] [name content]))
+    (mapv (fn [{:keys [name content]}] [(known-sections name) content]))
     (into {})))
 
+(defn parse-name [html]
+  (->
+    html
+    (html/select [:title])
+    first
+    html/text
+    string/trim))
+
+(defn parse-headline-and-mail [html]
+  (->>
+    (html/select html [:body])
+    first
+    :content
+    next next first
+    string/split-lines
+    (remove #{""})))
+
+(defn parse-pdf [stream]
+  (let [html (markup stream)
+        sections-data (parse-sections html)
+        name (parse-name html)
+        [headline email] (parse-headline-and-mail html)]
+    (assoc sections-data
+      :full-name name
+      :headline headline
+      :email email)))

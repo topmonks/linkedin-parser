@@ -3,21 +3,17 @@
             [clojure.string :as string])
   (:import [org.apache.pdfbox.pdmodel PDDocument]
            [linkedin.parser PDFText2HTML]
-           (java.net URL)
            (java.io ByteArrayInputStream)))
 
-
-(defn text-of-pdf
-  [stream]
-  (with-open [pd (PDDocument/load stream)]
+(defn read-pdf [pdf]
+  (with-open [pd (PDDocument/load pdf)]
     (let [stripper (PDFText2HTML. "UTF-16")]
       (.getText stripper pd))))
 
-(defn string-to-stream [string]
-  (ByteArrayInputStream.
-    (.getBytes (.trim string))))
+(defn input-stream [^String string]
+  (ByteArrayInputStream. (.getBytes (.trim string))))
 
-(defn preprocess [str]
+(defn preprocess [^String str]
   (-> str
     (string/replace #"Page\d+" "")
     (string/replace #"\n+" "\n\n")
@@ -25,7 +21,8 @@
     (string/replace #"<h1>" "</section><h1>")
     (string/replace #"</b>\n\n<b>" "")))
 
-(defn markup [url] (-> url text-of-pdf preprocess string-to-stream html/html-resource))
+(defn markup [input]
+  (-> input read-pdf preprocess input-stream html/html-resource))
 
 (defn sections [markup]
   (map
@@ -89,10 +86,10 @@
     (remove #{"\n\n"})
     (apply hash-map)))
 
-(defmulti parse-section (fn [s] (:name s)))
-(defmethod parse-section :default [s] s)
+(defmulti section (fn [s] (:name s)))
+(defmethod section :default [s] s)
 
-(defmethod parse-section "Summary" [section]
+(defmethod section "Summary" [section]
   (->>
     (:content section)
     first
@@ -101,7 +98,7 @@
     (string/join " ")
     (assoc section :content)))
 
-(defmethod parse-section "Honors and Awards" [section]
+(defmethod section "Honors and Awards" [section]
   (->>
     (:content section)
     first
@@ -110,7 +107,7 @@
     (string/join " ")
     (assoc section :content)))
 
-(defmethod parse-section "Skills & Expertise" [section]
+(defmethod section "Skills & Expertise" [section]
   (->>
     (html/select (:content section) [:b])
     first
@@ -120,31 +117,31 @@
     (mapv string/trim)
     (assoc section :content)))
 
-(defmethod parse-section "Experience" [section]
+(defmethod section "Experience" [section]
   (->>
     (items-of section)
     (mapv experience)
     (assoc section :content)))
 
-(defmethod parse-section "Volunteer Experience" [section]
+(defmethod section "Volunteer Experience" [section]
   (->>
     (items-of section)
     (mapv volunteer-experience)
     (assoc section :content)))
 
-(defmethod parse-section "Projects" [section]
+(defmethod section "Projects" [section]
   (->>
     (items-of section)
     (mapv project)
     (assoc section :content)))
 
-(defmethod parse-section "Education" [section]
+(defmethod section "Education" [section]
   (->>
     (items-of section)
     (mapv education)
     (assoc section :content)))
 
-(defmethod parse-section "Languages" [section]
+(defmethod section "Languages" [section]
   (->>
     (items-of section)
     (mapv languages)
@@ -164,7 +161,7 @@
     html
     sections
     (filter #(contains? known-sections (:name %)))
-    (mapv parse-section)
+    (mapv section)
     (mapv (fn [{:keys [name content]}] [(known-sections name) content]))
     (into {})))
 
@@ -185,8 +182,14 @@
     string/split-lines
     (remove #{""})))
 
-(defn parse-pdf [stream]
-  (let [html (markup stream)
+(defn parse-pdf
+  "Parses given LinkedIn profile PDF to data structures.
+
+  input - can be anything `org.apache.pdfbox.pdmodelPDDocument/load` takes (File, URL, InputStream or fileName)
+
+  Return map with parsed sections."
+  [input]
+  (let [html (markup input)
         sections-data (parse-sections html)
         name (parse-name html)
         [headline email] (parse-headline-and-mail html)]

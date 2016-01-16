@@ -10,14 +10,12 @@
   (:gen-class))
 
 (defn profile [file]
-  (->
-    file
-    parse-pdf
-    response))
+  (-> file parse-pdf response))
 
 (defroutes app-routes
   (wrap-multipart-params
-    (POST "/linkedin" {params :params} (profile (get-in params ["file" :tempfile])))))
+    (POST "/linkedin" {params :params}
+      (profile (get-in params ["file" :tempfile])))))
 
 (def app
   (->

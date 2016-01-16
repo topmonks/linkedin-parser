@@ -1,11 +1,11 @@
 (defproject linkedin-parser "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+  :url "https://github.com/topmonks/linkedin-parser"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :jvm-opts ^:replace ["-Xms512m" "-Xmx512m" "-server"]
   :main linkedin-parser.web
-  :dependencies [[org.clojure/clojure "1.8.0-RC4"]
+  :dependencies [[org.clojure/clojure "1.8.0-RC5"]
                  [enlive "1.1.6"]
                  [environ "1.0.1"]
                  [http-kit "2.1.19"]

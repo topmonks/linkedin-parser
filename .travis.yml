@@ -11,4 +11,5 @@ script:
   - mv "$(lein uberjar | sed -n 's/^Created \(.*standalone\.jar\)/\1/p')" app-standalone.jar
   - docker build -t linkedin-parser .
   - docker tag linkedin-parser "tutum.co/filemon/linkedin-parser:build-$TRAVIS_BUILD_NUMBER"
+  - docker tag linkedin-parser tutum.co/filemon/linkedin-parser:latest
   - docker push tutum.co/filemon/linkedin-parser

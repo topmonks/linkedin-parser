@@ -5,7 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :jvm-opts ^:replace ["-Xms512m" "-Xmx512m" "-server"]
   :main linkedin-parser.web
-  :dependencies [[org.clojure/clojure "1.8.0-RC5"]
+  :dependencies [[org.clojure/clojure "1.8.0"]
                  [enlive "1.1.6"]
                  [environ "1.0.1"]
                  [http-kit "2.1.19"]
@@ -16,4 +16,5 @@
   :java-source-paths ["src"]
   :plugins [[lein-environ "1.0.1"]]
   :profiles {:uberjar {:aot :all
+                       :jvm-opts ["-Dclojure.compiler.direct-linking=true"]
                        :omit-source true}})

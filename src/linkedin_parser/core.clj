@@ -86,10 +86,20 @@
     (remove #{"\n\n"})
     (apply hash-map)))
 
-(defmulti section (fn [s] (:name s)))
+(def known-sections
+  {"Summary" :summary
+   "Honors and Awards" :honors-and-awards
+   "Skills & Expertise" :skills-and-expertise
+   "Languages" :languages
+   "Experience" :experience
+   "Volunteer Experience" :volunteer-experience
+   "Projects" :projects
+   "Education" :education})
+
+(defmulti section (fn [s] (some-> s :name known-sections)))
 (defmethod section :default [s] s)
 
-(defmethod section "Summary" [section]
+(defmethod section :summary [section]
   (->>
     (:content section)
     first
@@ -98,7 +108,7 @@
     (string/join " ")
     (assoc section :content)))
 
-(defmethod section "Honors and Awards" [section]
+(defmethod section :honors-and-awards [section]
   (->>
     (:content section)
     first
@@ -107,7 +117,7 @@
     (string/join " ")
     (assoc section :content)))
 
-(defmethod section "Skills & Expertise" [section]
+(defmethod section :skills-and-expertise [section]
   (->>
     (html/select (:content section) [:b])
     first
@@ -117,44 +127,35 @@
     (mapv string/trim)
     (assoc section :content)))
 
-(defmethod section "Experience" [section]
+(defmethod section :experience [section]
   (->>
     (items-of section)
     (mapv experience)
     (assoc section :content)))
 
-(defmethod section "Volunteer Experience" [section]
+(defmethod section :volunteer-experience [section]
   (->>
     (items-of section)
     (mapv volunteer-experience)
     (assoc section :content)))
 
-(defmethod section "Projects" [section]
+(defmethod section :projects [section]
   (->>
     (items-of section)
     (mapv project)
     (assoc section :content)))
 
-(defmethod section "Education" [section]
+(defmethod section :education [section]
   (->>
     (items-of section)
     (mapv education)
     (assoc section :content)))
 
-(defmethod section "Languages" [section]
+(defmethod section :languages [section]
   (->>
     (items-of section)
     (mapv languages)
     (assoc section :content)))
-
-(def known-sections
-  {"Summary" :summary
-   "Honors and Awards" :honors-and-awards
-   "Skills & Expertise" :skills-and-expertise
-   "Languages" :languages
-   "Experience" :experience
-   "Projects" :projects
-   "Education" :education})
 
 (defn parse-sections [html]
   (->>

@@ -1,0 +1,7 @@
+linkedin-pdf-parser:
+  image: 'tutum.co/filemon/linkedin-parser:latest'
+  autoredeploy: true
+  environment:
+    - VIRTUAL_HOST=datasvc.dev.topmonks.com
+  tags:
+    - dev

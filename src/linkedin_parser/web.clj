@@ -1,6 +1,6 @@
 (ns linkedin-parser.web
   (:require [compojure.core :refer [defroutes POST]]
-            [org.httpkit.server :as http]
+            [immutant.web :as web]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
             [ring.middleware.format-response :refer [wrap-restful-response]]
             [ring.middleware.multipart-params :refer [wrap-multipart-params]]
@@ -26,12 +26,12 @@
 (defonce server (atom nil))
 (defn stop-server! []
   (when-not (nil? @server)
-    (@server :timeout 100)
+    (web/stop @server)
     (reset! server nil)))
 
 (defn run-server! [port]
   (do
-    (reset! server (http/run-server app {:port port}))
+    (reset! server (web/run app {:port port}))
     (println (str "Web server running at http://localhost:" port))))
 
 (defn -main [& [port]]

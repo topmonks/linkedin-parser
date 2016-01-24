@@ -8,7 +8,7 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [enlive "1.1.6"]
                  [environ "1.0.1"]
-                 [http-kit "2.1.19"]
+                 [org.immutant/web "2.1.2"]
                  [compojure "1.4.0"]
                  [ring/ring-defaults "0.1.5"]
                  [ring-middleware-format "0.7.0"]

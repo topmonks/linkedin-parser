@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.com/topmonks/linkedin-parser.svg?token=fNQseAsgANMEusR8xYWV)](https://travis-ci.com/topmonks/linkedin-parser)
 
+[![Deploy to Tutum](https://s.tutum.co/deploy-to-tutum.svg)](https://dashboard.tutum.co/stack/deploy/)
+
 A Clojure web service to convert LinkedIn PDF profile to requested data format.
 
 ## Usage

@@ -31,7 +31,7 @@
 
 (defn run-server! [port]
   (do
-    (reset! server (web/run app {:port port}))
+    (reset! server (web/run app {:port port :host "0.0.0.0"}))
     (println (str "Web server running at http://localhost:" port))))
 
 (defn -main [& [port]]

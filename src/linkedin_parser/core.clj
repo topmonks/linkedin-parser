@@ -65,14 +65,16 @@
 
 (defn education [[key val]]
   (let [name (some-> key html/text string/trim)
-        [duration field grade] (some-> val string/trim (string/split #", ") reverse)
+        [tmp description] (some->> val string/trim string/split-lines (remove #{""}))
+        [duration field grade] (some-> tmp string/trim (string/split #", ") reverse)
         [from to] (some-> duration (string/split #"\s-\s"))]
     {:name name
      :from (some-> from string/trim)
      :to (some-> to string/trim)
      :current (string/includes? duration "Present")
      :grade grade
-     :field-of-study field}))
+     :field-of-study field
+     :description description}))
 
 (defn languages [[key val]]
   (let [name (some-> key html/text string/trim)

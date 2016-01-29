@@ -1,5 +1,6 @@
 (ns linkedin-parser.web
   (:require [compojure.core :refer [defroutes POST]]
+            [compojure.route :as route]
             [immutant.web :as web]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
             [ring.middleware.format-response :refer [wrap-restful-response]]
@@ -15,7 +16,8 @@
 (defroutes app-routes
   (wrap-multipart-params
     (POST "/linkedin" {params :params}
-      (profile (get-in params ["file" :tempfile])))))
+      (profile (get-in params ["file" :tempfile]))))
+  (route/not-found "Page not found"))
 
 (def app
   (->

@@ -14,7 +14,7 @@
   (ByteArrayInputStream. (.getBytes (.trim string))))
 
 (defn preprocess [^String str]
-  (-> str
+  (some-> str
     (string/replace #"Page\d+" "")
     (string/replace #"\n+" "\n\n")
     (string/replace #"<h2>" "</section><section><h2>")
@@ -22,7 +22,7 @@
     (string/replace #"</b>\n\n<b>" "")))
 
 (defn markup [input]
-  (-> input read-pdf preprocess input-stream html/html-resource))
+  (some-> input read-pdf preprocess input-stream html/html-resource))
 
 (defn sections [markup]
   (map

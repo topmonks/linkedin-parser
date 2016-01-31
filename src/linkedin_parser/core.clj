@@ -78,7 +78,7 @@
 
 (defn languages [[key val]]
   (let [name (some-> key html/text string/trim)
-        proficiency (some-> val string/trim)]
+        proficiency (some-> val string/trim (string/replace #"[\(|\)]" ""))]
     {:language name
      :proficiency proficiency}))
 

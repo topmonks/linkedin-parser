@@ -19,7 +19,7 @@
     (string/replace #"\n+" "\n\n")
     (string/replace #"<h2>" "</section><section><h2>")
     (string/replace #"<h1>" "</section><h1>")
-    (string/replace #"</b>\n\n<b>" "")))
+    (string/replace #"</b>\n\n<b>" "\n\n")))
 
 (defn markup [input]
   (some-> input read-pdf preprocess input-stream html/html-resource))

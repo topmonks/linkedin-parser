@@ -1,4 +1,4 @@
-FROM java:8
+FROM martinseeler/oracle-server-jre
 ENV PORT 3002
 EXPOSE 3002
 RUN mkdir -p /usr/src/app

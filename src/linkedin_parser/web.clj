@@ -19,11 +19,21 @@
       (profile (get-in params ["file" :tempfile]))))
   (route/not-found "Page not found"))
 
+(defn wrap-exception-handling [handler]
+  (fn [request]
+    (try
+      (handler request)
+      (catch Exception e
+        (do
+          (println "ERROR:" (.getMessage e))
+          {:status 400 :body "Inavlid input"})))))
+
 (def app
   (->
     #'app-routes
     (wrap-defaults api-defaults)
-    wrap-restful-response))
+    wrap-restful-response
+    wrap-exception-handling))
 
 (defonce server (atom nil))
 (defn stop-server! []

@@ -1,4 +1,4 @@
-FROM martinseeler/oracle-server-jre
+FROM iron/java:1.8
 ENV PORT 3002
 EXPOSE 3002
 RUN mkdir -p /usr/src/app

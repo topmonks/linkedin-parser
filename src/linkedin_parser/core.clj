@@ -86,7 +86,9 @@
   (->>
     (:content section)
     (remove #{"\n\n"})
-    (apply hash-map)))
+    (partition 2 2 [nil])
+    (mapv vec)
+    (into {})))
 
 (def known-sections
   {"Summary" :summary

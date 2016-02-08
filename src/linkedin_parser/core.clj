@@ -67,10 +67,11 @@
    "prosinec" "12"})
 
 (defn iso-date [date]
-  (let [[month year] (string/split date #"\s")]
-    (if-not year
-      (some-> month (str "-01-01"))
-      (str year "-" (get months month) "-01"))))
+  (when-not (some #{date} present)
+    (let [[month year] (string/split date #"\s")]
+      (if-not year
+        (some-> month (str "-01-01"))
+        (str year "-" (get months month) "-01")))))
 
 (defn read-pdf [pdf]
   (with-open [pd (PDDocument/load pdf)]
@@ -107,7 +108,7 @@
      :company (some-> company string/trim)
      :from (some-> from string/trim iso-date)
      :to (some-> to string/trim iso-date)
-     :current (some->> present (some #(string/includes? duration %)))
+     :current (or (some #(string/includes? duration %) present) false)
      :description (some->> rest (remove #{""}) (string/join " "))}))
 
 (defn volunteer-experience [[key val]]
@@ -127,7 +128,7 @@
     {:name name
      :from (some-> from string/trim iso-date)
      :to (some-> to string/trim iso-date)
-     :current (some->> present (some #(string/includes? duration %)))
+     :current (or (some #(string/includes? duration %) present) false)
      :description (some->> rest (remove #{""}) (string/join " "))}))
 
 (defn education [[key val]]
@@ -138,7 +139,7 @@
     {:name name
      :from (some-> from string/trim iso-date)
      :to (some-> to string/trim iso-date)
-     :current (some->> present (some #(string/includes? duration %)))
+     :current (or (some #(string/includes? duration %) present) false)
      :grade grade
      :field-of-study field
      :description description}))

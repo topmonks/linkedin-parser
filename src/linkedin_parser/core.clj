@@ -5,6 +5,73 @@
            [linkedin.parser PDFText2HTML]
            (java.io ByteArrayInputStream)))
 
+(def present ["Present", "Sou#asnost"])
+
+(def known-sections
+  {"Summary" :summary
+   "Honors and Awards" :honors-and-awards
+   "Skills & Expertise" :skills-and-expertise
+   "Languages" :languages
+   "Experience" :experience
+   "Volunteer Experience" :volunteer-experience
+   "Projects" :projects
+   "Education" :education
+
+   "Souhrn" :summary
+   "Ceny a ocenění" :honors-and-awards
+   "Dovednosti a odbornosti" :skills-and-expertise
+   "Jazyky" :languages
+   "Pracovní zkušenosti" :experience
+   "Zkušenosti z dobro#inné práce" :volunteer-experience
+   "Projekty" :projects
+   "Vzd#lání" :education})
+
+(def language-proficiency
+  {"Native or bilingual proficiency" :native
+   "Full professional proficiency" :full-professional
+   "Professional working proficiency" :professional-working
+   "Limited working proficiency" :limited-working
+   "Elementary proficiency" :elementary
+
+   "Znalost na úrovni rodilého nebo dvojjazy#ného mluv#ího" :native
+   "Pln# profesionální znalost" :full-professional
+   "Znalost umož#ující profesionální práci" :professional-working
+   "Znalost umož#ující omezenou práci" :limited-working
+   "Elementární znalost" :elementary})
+
+(def months
+  {"January" "01"
+   "February" "02"
+   "March" "03"
+   "April" "04"
+   "May" "05"
+   "June" "06"
+   "July" "07"
+   "August" "08"
+   "September" "09"
+   "October" "10"
+   "November" "11"
+   "December" "12"
+
+   "leden" "01"
+   "únor" "02"
+   "b#ezen" "03"
+   "duben" "04"
+   "kv#ten" "05"
+   "#erven" "06"
+   "#ervenec" "07"
+   "srpen" "08"
+   "zá#í" "09"
+   "#íjen" "10"
+   "listopad" "11"
+   "prosinec" "12"})
+
+(defn iso-date [date]
+  (let [[month year] (string/split date #"\s")]
+    (if-not year
+      (some-> month (str "-01-01"))
+      (str year "-" (get months month) "-01"))))
+
 (defn read-pdf [pdf]
   (with-open [pd (PDDocument/load pdf)]
     (let [stripper (PDFText2HTML. "UTF-16")]
@@ -15,7 +82,7 @@
 
 (defn preprocess [^String str]
   (some-> str
-    (string/replace #"Page\d+" "")
+    (string/replace #"((Page)|(Stránka))\d+" "")
     (string/replace #"\n+" "\n\n")
     (string/replace #"<h2>" "</section><section><h2>")
     (string/replace #"<h1>" "</section><h1>")
@@ -32,46 +99,46 @@
     (html/select markup [:section])))
 
 (defn experience [[key val]]
-  (let [[title company] (some-> key html/text string/trim (string/split #"\sat\s"))
+  (let [[title company] (some-> key html/text string/trim (string/split #"((at)|(ve\:))"))
         [duration & rest] (some-> val string/trim string/split-lines)
         [from to] (some-> duration (string/split #"-"))
         [to _] (some-> to (string/split #"\("))]
     {:title (some-> title string/trim)
      :company (some-> company string/trim)
-     :from (some-> from string/trim)
-     :to (some-> to string/trim)
-     :current (string/includes? duration "Present")
+     :from (some-> from string/trim iso-date)
+     :to (some-> to string/trim iso-date)
+     :current (some->> present (some #(string/includes? duration %)))
      :description (some->> rest (remove #{""}) (string/join " "))}))
 
 (defn volunteer-experience [[key val]]
-  (let [[title company] (some-> key html/text string/trim (string/split #"at"))
+  (let [[title company] (some-> key html/text string/trim (string/split #"((at)|(ve\:))"))
         [duration] (some-> val string/trim string/split-lines)
         [from to] (some-> duration (string/split #"-"))
         [to] (some-> to (string/split #"\("))]
     {:role (some-> title string/trim)
      :organization (some-> company string/trim)
-     :from (some-> from string/trim)
-     :to (some-> to string/trim)}))
+     :from (some-> from string/trim iso-date)
+     :to (some-> to string/trim iso-date)}))
 
 (defn project [[key val]]
   (let [name (some-> key html/text string/trim)
         [duration & rest] (some-> val string/trim string/split-lines)
-        [from to] (some-> duration (string/split #"\sto\s"))]
+        [from to] (some-> duration (string/split #"((to)|(-))"))]
     {:name name
-     :from (some-> from string/trim)
-     :to (some-> to string/trim)
-     :current (string/includes? duration "Present")
+     :from (some-> from string/trim iso-date)
+     :to (some-> to string/trim iso-date)
+     :current (some->> present (some #(string/includes? duration %)))
      :description (some->> rest (remove #{""}) (string/join " "))}))
 
 (defn education [[key val]]
   (let [name (some-> key html/text string/trim)
         [tmp description] (some->> val string/trim string/split-lines (remove #{""}))
         [duration field grade] (some-> tmp string/trim (string/split #", ") reverse)
-        [from to] (some-> duration (string/split #"\s-\s"))]
+        [from to] (some-> duration (string/split #"-"))]
     {:name name
-     :from (some-> from string/trim)
-     :to (some-> to string/trim)
-     :current (string/includes? duration "Present")
+     :from (some-> from string/trim iso-date)
+     :to (some-> to string/trim iso-date)
+     :current (some->> present (some #(string/includes? duration %)))
      :grade grade
      :field-of-study field
      :description description}))
@@ -80,7 +147,7 @@
   (let [name (some-> key html/text string/trim)
         proficiency (some-> val string/trim (string/replace #"[\(|\)]" ""))]
     {:language name
-     :proficiency proficiency}))
+     :proficiency (language-proficiency proficiency)}))
 
 (defn items-of [section]
   (->>
@@ -89,16 +156,6 @@
     (partition 2 2 [nil])
     (mapv vec)
     (into {})))
-
-(def known-sections
-  {"Summary" :summary
-   "Honors and Awards" :honors-and-awards
-   "Skills & Expertise" :skills-and-expertise
-   "Languages" :languages
-   "Experience" :experience
-   "Volunteer Experience" :volunteer-experience
-   "Projects" :projects
-   "Education" :education})
 
 (defmulti section (fn [s] (some-> s :name known-sections)))
 (defmethod section :default [s] s)

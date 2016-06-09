@@ -1,0 +1,13 @@
+linkedin-pdf-parser:
+  environment:
+    - PORT=3002
+  expose:
+    - '3002'
+  image: 'topmonkscom/linkedin-parser:build-29'
+  labels:
+    - 'com.topmonks.maintainer=ales.roubicek@topmonks.com'
+  mem_limit: 512m
+  restart: always
+  tags:
+    - prod
+    - techloop

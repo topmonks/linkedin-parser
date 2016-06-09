@@ -1,0 +1,14 @@
+linkedin-pdf-parser:
+  autoredeploy: true
+  environment:
+    - PORT=3002
+    - VIRTUAL_HOST=datasvc.dev.topmonks.com
+  expose:
+    - '3002'
+  image: 'topmonkscom/linkedin-parser:latest'
+  labels:
+    com.topmonks.maintainer: ales.roubicek@topmonks.com
+  mem_limit: 512m
+  restart: always
+  tags:
+    - dev

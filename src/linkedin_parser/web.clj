@@ -4,6 +4,7 @@
             [immutant.web :as web]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
             [ring.middleware.format-response :refer [wrap-restful-response]]
+            [ring.middleware.logger :refer [wrap-with-logger]]
             [ring.middleware.multipart-params :refer [wrap-multipart-params]]
             [ring.util.response :refer [response]]
             [environ.core :refer [env]]
@@ -33,7 +34,8 @@
     #'app-routes
     (wrap-defaults api-defaults)
     wrap-restful-response
-    wrap-exception-handling))
+    wrap-exception-handling
+    wrap-with-logger))
 
 (defonce server (atom nil))
 (defn stop-server! []
